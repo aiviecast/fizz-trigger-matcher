@@ -1,0 +1,57 @@
+// wasm — kotodama analyzer / ブラウザ側から呼ぶ。
+//   host が 3 つのバッファに書く: 入力文 / パターン(改行区切り)/ suggest(改行区切り、
+//   各行はカンマ区切り)。各バッファは from_list(to_list) コピー経由で文字列化(almide#690)。
+//   結果(推奨 transform、改行区切り)は out_ptr で読む。
+import self as tm
+import bytes
+import float
+import int
+import list
+import string
+
+var g_input: Bytes = bytes.new(0)
+var g_patterns: Bytes = bytes.new(0)
+var g_suggests: Bytes = bytes.new(0)
+var g_out: Bytes = bytes.new(0)
+
+@export(wasm, "input_alloc")
+fn input_alloc(len: Float) -> RawPtr = { g_input = bytes.new(float.to_int(len)); bytes.as_mut_ptr(g_input) }
+
+@export(wasm, "patterns_alloc")
+fn patterns_alloc(len: Float) -> RawPtr = { g_patterns = bytes.new(float.to_int(len)); bytes.as_mut_ptr(g_patterns) }
+
+@export(wasm, "suggests_alloc")
+fn suggests_alloc(len: Float) -> RawPtr = { g_suggests = bytes.new(float.to_int(len)); bytes.as_mut_ptr(g_suggests) }
+
+@export(wasm, "out_ptr")
+fn out_ptr() -> RawPtr = bytes.as_mut_ptr(g_out)
+
+// バッファを独立コピーしてから文字列化(to_string_lossy のエイリアス free 回避、almide#690)。
+fn s_input() -> String = bytes.to_string_lossy(bytes.from_list(bytes.to_list(g_input)))
+fn s_patterns() -> List[String] = string.split(bytes.to_string_lossy(bytes.from_list(bytes.to_list(g_patterns))), "\n")
+fn s_suggests() -> List[String] = string.split(bytes.to_string_lossy(bytes.from_list(bytes.to_list(g_suggests))), "\n")
+
+@export(wasm, "count_matching")
+fn w_count_matching() -> Float = int.to_float(tm.count_matching(s_input(), s_patterns()))
+
+@export(wasm, "has_suggestion")
+fn w_has_suggestion() -> Float = if tm.has_suggestion(s_input(), s_patterns()) then 1.0 else 0.0
+
+// 推奨 transform を改行区切りで g_out に書き、長さを返す(out_ptr で読む)。
+@export(wasm, "select_resolve")
+fn w_select_resolve() -> Float = {
+  let r = tm.select(s_input(), s_patterns(), s_suggests())
+  let joined = string.join(r, "\n")
+  g_out = bytes.from_string(joined)
+  int.to_float(list.len(string.to_bytes(joined)))
+}
+
+effect fn main() -> Unit = {
+  let _a = input_alloc(1.0)
+  let _b = patterns_alloc(1.0)
+  let _c = suggests_alloc(1.0)
+  let _d = w_count_matching()
+  let _e = w_select_resolve()
+  let _f = out_ptr()
+  ()
+}

@@ -1,0 +1,26 @@
+// CLI エントリポイント (native) — トリガ照合の目視確認(shizuku triggers の一部で)。
+import self as tm
+import string
+import json
+import value
+
+effect fn main() -> Unit = {
+  // shizuku triggers.json の一部を再現。
+  let patterns = ["教えて", "おすすめ", "好き", "AI", "天気"]
+  let suggests = [
+    "list-parody,face-value-with-stamp",
+    "list-parody",
+    "meta-ai-tease,list-parody",
+    "meta-ai-tease",
+    "direct",
+  ]
+  let input = "好きな AI のおすすめ教えて"
+  println(json.stringify(value.object([
+    ("input", value.str(input)),
+    ("count_matching", value.int(tm.count_matching(input, patterns))),
+    ("has_suggestion", value.bool(tm.has_suggestion(input, patterns))),
+    ("suggestions", value.str(string.join(tm.select(input, patterns, suggests), "|"))),
+    ("no_match_count", value.int(tm.count_matching("こんにちは", patterns))),
+    ("no_match_has", value.bool(tm.has_suggestion("こんにちは", patterns))),
+  ])))
+}

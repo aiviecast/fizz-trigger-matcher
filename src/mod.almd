@@ -1,0 +1,65 @@
+// fizz_trigger_matcher — 入力パターン → 推奨 transform(prior)の選択エンジン(§10 trigger-matcher)。
+//
+// 責務 (一行): persona の triggers.json(pattern → suggest[])に対し、入力文の部分文字列
+// マッチで発火したルールの suggest を集め、初出順で重複排除した推奨 transform 列を返す。
+//
+// triggers.json の読み込み・parse は host の I/O、マッチ判定と suggest 集約は純粋なので
+// Almide に集約=単一の正本。ルールはペルソナ別データなので埋め込まず、引数で受け取る。
+// 移植元: openaituber kotodama/personae/*/triggers.json
+//   ("pattern は単純な部分文字列マッチで照合" — triggers.json の comment 仕様)。
+
+import string
+import list
+
+// 1 ルールの照合: pattern が input の部分文字列か。
+fn matches(input: String, pattern: String) -> Bool = string.contains(input, pattern)
+
+// input にマッチした(部分文字列を含む)パターンの数。
+fn count_matching(input: String, patterns: List[String]) -> Int = {
+  var hit = 0
+  var i = 0
+  let n = list.len(patterns)
+  while i < n {
+    if string.contains(input, list.get_or(patterns, i, "")) then hit = hit + 1 else hit = hit
+    i = i + 1
+  }
+  hit
+}
+
+// input にマッチしたパターンの index 列(0-based、ルール順)。
+fn matching_indices(input: String, patterns: List[String]) -> List[Int] = {
+  var acc: List[Int] = []
+  var i = 0
+  let n = list.len(patterns)
+  while i < n {
+    if string.contains(input, list.get_or(patterns, i, "")) then list.push(acc, i) else {}
+    i = i + 1
+  }
+  acc
+}
+
+// 推奨 transform の選択:
+//   patterns[i] と suggests[i] が対応(suggests[i] = "a,b,c" のカンマ区切り)。
+//   input にマッチした全ルールの suggest を順に集め、初出順で重複排除して返す。
+fn select(input: String, patterns: List[String], suggests: List[String]) -> List[String] = {
+  var acc: List[String] = []
+  var i = 0
+  let n = list.len(patterns)
+  while i < n {
+    if string.contains(input, list.get_or(patterns, i, "")) then {
+      let parts = string.split(list.get_or(suggests, i, ""), ",")
+      var j = 0
+      let m = list.len(parts)
+      while j < m {
+        let s = string.trim(list.get_or(parts, j, ""))
+        if s != "" then list.push(acc, s) else {}
+        j = j + 1
+      }
+    } else {}
+    i = i + 1
+  }
+  list.unique(acc)
+}
+
+// 推奨が 1 つでもあるか(どのルールも当たらなければ false → 呼び出し側は default 戦略)。
+fn has_suggestion(input: String, patterns: List[String]) -> Bool = count_matching(input, patterns) > 0

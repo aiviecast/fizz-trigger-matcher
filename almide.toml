@@ -1,0 +1,4 @@
+[package]
+name = "fizz_trigger_matcher"
+version = "0.1.0"
+description = "Fizz trigger matcher — kotodama triggers.json engine: substring-match input against per-persona patterns, collect suggested transform priors (dedup, first-occurrence order). One Almide core, native + wasm."

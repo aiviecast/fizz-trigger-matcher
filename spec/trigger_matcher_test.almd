@@ -1,0 +1,55 @@
+import self as tm
+import string
+import list
+
+// shizuku triggers.json の一部。
+fn patterns() -> List[String] = ["教えて", "おすすめ", "好き", "AI", "天気", "疲れた"]
+fn suggests() -> List[String] = [
+  "list-parody,face-value-with-stamp",
+  "list-parody",
+  "meta-ai-tease,list-parody",
+  "meta-ai-tease",
+  "direct",
+  "callback-world-asset,direct",
+]
+
+test "matches: 部分文字列" {
+  assert_eq(tm.matches("好きな食べ物教えて", "教えて"), true)
+  assert_eq(tm.matches("好きな食べ物教えて", "天気"), false)
+  assert_eq(tm.matches("", "x"), false)
+}
+
+test "count_matching" {
+  assert_eq(tm.count_matching("好きな AI のおすすめ教えて", patterns()), 4)  // 教えて/おすすめ/好き/AI
+  assert_eq(tm.count_matching("天気おしえて", patterns()), 1)               // 天気のみ
+  assert_eq(tm.count_matching("こんにちは", patterns()), 0)
+}
+
+test "has_suggestion" {
+  assert_eq(tm.has_suggestion("好き", patterns()), true)
+  assert_eq(tm.has_suggestion("こんにちは", patterns()), false)
+}
+
+test "select: 初出順で重複排除" {
+  // 教えて(list-parody,face-value) → おすすめ(list-parody dup) → 好き(meta-ai-tease,list-parody dup) → AI(meta-ai-tease dup)
+  let r = tm.select("好きな AI のおすすめ教えて", patterns(), suggests())
+  assert_eq(string.join(r, "|"), "list-parody|face-value-with-stamp|meta-ai-tease")
+}
+
+test "select: 単一マッチ" {
+  let r = tm.select("疲れたなあ", patterns(), suggests())
+  assert_eq(string.join(r, "|"), "callback-world-asset|direct")
+}
+
+test "select: マッチ無し → 空" {
+  let r = tm.select("こんにちは", patterns(), suggests())
+  assert_eq(list.len(r), 0)
+}
+
+test "matching_indices" {
+  let idx = tm.matching_indices("天気とAI", patterns())
+  // AI(index 3) と 天気(index 4)
+  assert_eq(list.len(idx), 2)
+  assert_eq(list.contains(idx, 3), true)
+  assert_eq(list.contains(idx, 4), true)
+}
