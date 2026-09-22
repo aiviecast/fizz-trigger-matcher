@@ -28,7 +28,7 @@ host が 3 バッファに書く: 入力文 / パターン(改行区切り)/ sug
 各バッファは `from_list(to_list)` コピー経由で文字列化(almide#690 回避)。結果は `out_ptr` で読む。
 例: [`browser/trigger-driver.js`](browser/trigger-driver.js)。
 
-下流の [fizz-response-transformer](https://github.com/Aid-On/fizz-response-transformer) が、この出力(候補)から
+下流の [fizz-response-transformer](https://github.com/aiviecast/fizz-response-transformer) が、この出力(候補)から
 weight で実際に適用する transform を選ぶ。
 
 ## ビルド / テスト
