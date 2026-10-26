@@ -20,7 +20,7 @@ fn count_matching(input: String, patterns: List[String]) -> Int = {
   var i = 0
   let n = list.len(patterns)
   while i < n {
-    if string.contains(input, list.get_or(patterns, i, "")) then hit = hit + 1 else hit = hit
+    if string.contains(input, list.get(patterns, i) ?? "") then hit = hit + 1 else hit = hit
     i = i + 1
   }
   hit
@@ -32,7 +32,7 @@ fn matching_indices(input: String, patterns: List[String]) -> List[Int] = {
   var i = 0
   let n = list.len(patterns)
   while i < n {
-    if string.contains(input, list.get_or(patterns, i, "")) then list.push(acc, i) else {}
+    if string.contains(input, list.get(patterns, i) ?? "") then list.push(acc, i) else {}
     i = i + 1
   }
   acc
@@ -46,12 +46,12 @@ fn select(input: String, patterns: List[String], suggests: List[String]) -> List
   var i = 0
   let n = list.len(patterns)
   while i < n {
-    if string.contains(input, list.get_or(patterns, i, "")) then {
-      let parts = string.split(list.get_or(suggests, i, ""), ",")
+    if string.contains(input, list.get(patterns, i) ?? "") then {
+      let parts = string.split(list.get(suggests, i) ?? "", ",")
       var j = 0
       let m = list.len(parts)
       while j < m {
-        let s = string.trim(list.get_or(parts, j, ""))
+        let s = string.trim(list.get(parts, j) ?? "")
         if s != "" then list.push(acc, s) else {}
         j = j + 1
       }

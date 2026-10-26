@@ -16,10 +16,10 @@ effect fn main() -> Unit = {
   ]
   let input = "好きな AI のおすすめ教えて"
   println(json.stringify(value.object([
-    ("input", value.str(input)),
+    ("input", value.string(input)),
     ("count_matching", value.int(tm.count_matching(input, patterns))),
     ("has_suggestion", value.bool(tm.has_suggestion(input, patterns))),
-    ("suggestions", value.str(string.join(tm.select(input, patterns, suggests), "|"))),
+    ("suggestions", value.string(list.join(tm.select(input, patterns, suggests), "|"))),
     ("no_match_count", value.int(tm.count_matching("こんにちは", patterns))),
     ("no_match_has", value.bool(tm.has_suggestion("こんにちは", patterns))),
   ])))

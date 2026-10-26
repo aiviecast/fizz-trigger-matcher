@@ -33,12 +33,12 @@ test "has_suggestion" {
 test "select: 初出順で重複排除" {
   // 教えて(list-parody,face-value) → おすすめ(list-parody dup) → 好き(meta-ai-tease,list-parody dup) → AI(meta-ai-tease dup)
   let r = tm.select("好きな AI のおすすめ教えて", patterns(), suggests())
-  assert_eq(string.join(r, "|"), "list-parody|face-value-with-stamp|meta-ai-tease")
+  assert_eq(list.join(r, "|"), "list-parody|face-value-with-stamp|meta-ai-tease")
 }
 
 test "select: 単一マッチ" {
   let r = tm.select("疲れたなあ", patterns(), suggests())
-  assert_eq(string.join(r, "|"), "callback-world-asset|direct")
+  assert_eq(list.join(r, "|"), "callback-world-asset|direct")
 }
 
 test "select: マッチ無し → 空" {
