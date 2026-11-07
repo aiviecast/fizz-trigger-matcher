@@ -1,6 +1,5 @@
 // CLI エントリポイント (native) — トリガ照合の目視確認(shizuku triggers の一部で)。
 import self as tm
-import string
 import json
 import value
 

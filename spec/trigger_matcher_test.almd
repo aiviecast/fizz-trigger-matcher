@@ -1,5 +1,4 @@
 import self as tm
-import string
 import list
 
 // shizuku triggers.json の一部。
